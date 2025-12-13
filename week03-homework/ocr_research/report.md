@@ -55,5 +55,5 @@ for res in output:
     res.save_to_json(save_path="output") ## 保存当前图像的结构化json结果
     res.save_to_markdown(save_path="output") ## 保存当前图像的markdown格式的结果
   ```
-
+附：可能是我的GPU比较差，1050TI，如果用PPocrV5的gpu版本，不能识别到任何文字，只有cpu可以。
 
