@@ -52,7 +52,7 @@ Settings.embed_model = DashScopeEmbedding(
 
 # 使用通义千问的文本嵌入模型
 EMBED_MODEL = DashScopeEmbedding(
-    model_name="text-embedding-v3",
+    model_name=DashScopeTextEmbeddingModels.TEXT_EMBEDDING_V3,
     api_key=DASHSCOPE_API_KEY
 )
 
