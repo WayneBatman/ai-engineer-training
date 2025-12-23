@@ -68,7 +68,6 @@ def multiHopQuery(question: str):
 
     reasoning_path = []
     # 1. RAG 检索：识别问题中的核心实体
-    # 我们使用一个简单的提示来让 LLM 提取公司名称
     entity_extraction_prompt = PromptTemplate(
         "从以下问题中提取出公司或机构的名称：'{question}'\n"
         "只返回名称，不要添加任何其他文字。"
@@ -76,7 +75,7 @@ def multiHopQuery(question: str):
     formatted_prompt = entity_extraction_prompt.format(question=question)
     entity_name_response = config.Settings.llm.complete(formatted_prompt)
     entity_name = entity_name_response.text.strip()
-
+    print(f"步骤 1: 从问题 '{question}' 中识别出核心实体 -> '{entity_name}'")
     reasoning_path.append(f"步骤 1: 从问题 '{question}' 中识别出核心实体 -> '{entity_name}'")
 
     cypher_query = ""
@@ -98,7 +97,9 @@ def multiHopQuery(question: str):
         kg_result_text = str(graph_response)
 
     else:
+        print(f"步骤 2: 未识别到特定模式，使用 LLM 将自然语言转换为 Cypher 查询。")
         reasoning_path.append(f"步骤 2: 未识别到特定模式，使用 LLM 将自然语言转换为 Cypher 查询。")
+
         kg_response = _kg_query_engine.query(f"查询与 '{entity_name}' 相关的信息")
         kg_result_text = kg_response.response
 
