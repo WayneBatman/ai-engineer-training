@@ -92,7 +92,8 @@ def multiHopQuery(question: str):
 
         # "detail": "处理查询时发生内部错误: 'KnowledgeGraphQueryEngine' object has no attribute 'storage_context'"
         #这里一直在报错，但是我看KnowledgeGraphQueryEngine中，有这个属性才对
-        graph_store = _kg_query_engine.storage_context.graph_store
+        # graph_store = _kg_query_engine.storage_context.graph_store
+        graph_store = _kg_query_engine.__getattribute__("graph_store")
         graph_response = graph_store.query(cypher_query)
         kg_result_text = str(graph_response)
 
