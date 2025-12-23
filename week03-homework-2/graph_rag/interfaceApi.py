@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from starlette import status
@@ -10,11 +12,10 @@ class QueryRequest(BaseModel):
     question : str = Field(..., example="上汽通用五菱的最大股东是谁？")
 
 class QueryResponse(BaseModel):
-    question : str
-    answer : str
-    score : float
+    final_answer: str
+    reasoning_path: List[str]
 
-@router.post("/query",response_model=list[QueryResponse])
+@router.post("/query",response_model=QueryResponse)
 async def query_faq(request: QueryRequest):
     if not request.question:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,detail="请问我有什么可以帮助您？")
