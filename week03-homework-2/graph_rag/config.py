@@ -4,7 +4,8 @@ import os
 from dotenv import load_dotenv
 from llama_index.core import Settings
 from llama_index.embeddings.dashscope import DashScopeEmbedding, DashScopeTextEmbeddingModels
-from llama_index.llms.dashscope import DashScope
+#from llama_index.llms.dashscope import DashScope
+from llama_index.llms.dashscope import DashScope as DashScopeLLM
 from llama_index.llms.openai_like import OpenAILike
 
 print("++++开始初始化++++++")
@@ -43,7 +44,22 @@ if not DASHSCOPE_API_KEY:
 #     }
 # )
 
-Settings.llm = DashScope(model_name="qwen-plus", api_key=DASHSCOPE_API_KEY,extra_body={"enable_search": False})
+# Settings.llm = DashScope(
+#     model_name="qwen-plus",
+#     api_key=DASHSCOPE_API_KEY,
+#     extra_body={"enable_search": False}
+# )
+
+Settings.llm = DashScopeLLM(
+    model_name="qwen-plus",
+    api_key=DASHSCOPE_API_KEY,
+    result_format="message",
+    # 👇 直接作为顶层参数（某些版本更认这种写法）
+    enable_search=False,
+    additional_kwargs={
+        "enable_search": False,  # ✅ 关键：禁止联网
+    }
+)
 
 Settings.embed_model = DashScopeEmbedding(
     model_name=DashScopeTextEmbeddingModels.TEXT_EMBEDDING_V3,
