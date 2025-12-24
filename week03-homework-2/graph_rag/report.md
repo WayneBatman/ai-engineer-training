@@ -113,8 +113,50 @@ graph LR
 }
 ```
 不过，这个答案虽然解决了报错问题，但是，从结果上看，似乎回答成了上汽通用五菱的成立时间。
+
+20251224
+```python
+    #通过增加文本语义分割的节点解析器，来提高rag的检索准确性
+    spliter = SemanticSplitterNodeParser.from_defaults(
+        embed_model=config.Settings.embed_model
+    )
+```
+通过增加节点解析器，提高rag的检索准确性
+对于问题： "通用汽车公司的成立日期？"
+通过控制台打印看，已经检索到准确的的信息--通用汽车公司的成立时间。但是实际最终结果，还是返回了上汽通用五菱的背景信息
+控制台打印：
+```console
+当前用户问题: 通用汽车公司的成立日期？
+步骤 1: 从问题 '通用汽车公司的成立日期？' 中识别出核心实体 -> '通用汽车公司'
+步骤 2: 未识别到特定模式，使用 LLM 将自然语言转换为 Cypher 查询。
+Graph Store Query:
+MATCH (c:Company {name: '通用汽车公司'})-[:RELATED_TO*0..]-(related)                                                                                                                                                                                                                                             
+RETURN c, related                                                                                                                                                                                                                                                                                                
+2025-12-24 10:00:39,843 - WARNING - Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownRelationshipTypeWarning} {category: UNRECOGNIZED} {title: The provided relationship type is not in the database.} {description: One of the relationship types in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing relationship type is: RELATED_TO)} {position: line: 1, column: 38, offset: 37} for query: "MATCH (c:Company {name: '通用汽车公司'})-[:RELATED_TO*0..]-(related)\nRETURN c, related"
+2025-12-24 10:00:39,843 - WARNING - Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownLabelWarning} {category: UNRECOGNIZED} {title: The provided label is not in the database.} {description: One of the labels in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing label name is: Company)} {position: line: 1, column: 10, offset: 9} for query: "MATCH (c:Company {name: '通用汽车公司'})-[:RELATED_TO*0..]-(related)\nRETURN c, related"
+Graph Store Response:
+[]                                                                                                                                                                                                                                                                                                               
+Final Response: 未找到与“通用汽车公司”相关的信息。                                                                                                                                                                                                                                                               
+rag检索：通用汽车公司成立于1908年9月22日，总部位于美国。其主营业务涵盖整车及相关配件的生产、移动出行服务以及汽车行业上下游服务。公司前身为1903年由戴维·别克创办的别克汽车公司，业务遍及全球汽车生产与销售，旗下拥有别克、雪佛兰、凯迪拉克、GMC等多个知名品牌。2023年，公司实现收入1718亿美元。近年来，通用汽车积 极推进电气化转型，包括更换企业LOGO以及投资电池材料领域。
+```
+但是实际返回:
+```浏览器
+{
+  "final_answer": "通用汽车公司（General Motors Company）成立于1908年9月22日。",
+  "reasoning_path": [
+    "步骤 1: 从问题 '通用汽车公司的成立日期？' 中识别出核心实体 -> '通用汽车公司'",
+    "步骤 2: 未识别到特定模式，使用 LLM 将自然语言转换为 Cypher 查询。",
+    "   - 图谱查询结果: 未找到与“通用汽车公司”相关的信息。",
+    "步骤 3: 通过 RAG 检索关于 '通用汽车公司' 的背景文档信息。",
+    "   - RAG 检索到的上下文: 公司名称: 上汽通用五菱\r\n成立日期: 2002-11-18\r\n总部地点: 中国柳州\r\n主营业务: 各类乘用车以及特种汽车生产、制造以及与汽车相关配件的生产、制造\r\n公司简介: 上汽通用五菱企业愿景为“成为全球创新、跨界、体验的标杆公司”。拥有五菱和宝骏两个高价值汽车品牌：五菱品牌不忘初心，持续深耕人民需求，要造人民买得起、用得上、用得好的产品；宝骏品牌以“年轻、科技、向上”为标签，致力于对未来生...",
+    "步骤 4: 综合图谱结果和文档信息，由 LLM 生成最终的自然语言回答。"
+  ]
+}
+```
+
 ## 4. 总结
-本程序成功了一半，即实现了精确的匹配。另外一半，由于混入了自然语言，导致解析失败，最终导致查询失败。
-目前还不知道怎么解决。
 由于引入了Neo4j的图数据库，这个是一个新的数据库，需要花些时间学习其用法。
 通过参考别人的代码并加以调试，在不断的调试过程中，积累并消化GraphRAG的使用、技术构成。
+20241224
+1，通过构建明确的提示词，告知大模型，想要做什么。
+2，通过增加合适的节点解析器，将文档拆分，提高rag的检索的准确性

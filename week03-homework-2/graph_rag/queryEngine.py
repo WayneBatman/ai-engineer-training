@@ -1,10 +1,13 @@
 import os
+from os.path import splitdrive
+
 from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
     StorageContext,
     load_index_from_storage,
 )
+from llama_index.core.node_parser import SemanticSplitterNodeParser
 from llama_index.graph_stores.neo4j import Neo4jGraphStore
 from llama_index.core.query_engine import KnowledgeGraphQueryEngine
 from llama_index.core.prompts import PromptTemplate, PromptType
@@ -18,12 +21,20 @@ _kg_query_engine = None
 def _initGraphIndex():
     global _rag_query_engine
 
+    #通过增加文本语义分割的节点解析器，来提高rag的检索准确性
+    spliter = SemanticSplitterNodeParser.from_defaults(
+        embed_model=config.Settings.embed_model
+    )
+
     if not os.path.exists(config.INDEX_DIR):
         print("未找到向量索引")
         documents = SimpleDirectoryReader(
             input_files=[os.path.join(config.DATA_DIR, "company.txt")]
         ).load_data()
-        index = VectorStoreIndex.from_documents(documents)
+        index = VectorStoreIndex.from_documents(
+            documents,
+            transformations=[spliter]
+        )
         index.storage_context.persist(persist_dir = config.INDEX_DIR)
         print(f"向量索引已创建")
     else:
@@ -113,6 +124,7 @@ def multiHopQuery(question: str):
 
     # 3. RAG 补充信息
     rag_response = _rag_query_engine.query(f"提供关于 '{entity_name}' 的详细信息。")
+    print(f"rag检索：{rag_response}")
     rag_context = "\n\n".join([node.get_content() for node in rag_response.source_nodes])
     reasoning_path.append(f"步骤 3: 通过 RAG 检索关于 '{entity_name}' 的背景文档信息。")
     reasoning_path.append(f"   - RAG 检索到的上下文: {rag_context[:200]}...")  # 仅显示部分
