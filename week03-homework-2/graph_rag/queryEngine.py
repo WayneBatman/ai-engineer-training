@@ -16,8 +16,9 @@ from llama_index.core.prompts import PromptTemplate, PromptType
 
 import config
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("llama_index").setLevel(logging.DEBUG)
+logging.getLogger("dashscope").setLevel(logging.DEBUG)
 
 # --- 全局变量 ---
 _rag_query_engine = None
@@ -142,7 +143,8 @@ def multiHopQuery(question: str):
     # 4. LLM 生成最终回答
     final_answer_prompt = PromptTemplate(
         "你是一个专业的金融分析师。请根据以下信息，以清晰、简洁的语言回答用户的问题。\n"
-        "请不要使用实时搜索，仅根据本地的知识库和知识图谱回答"
+        "请严格根据以下信息回答问题，不要使用任何外部知识或实时搜索功能。"
+        "即使你觉得信息有误，也不要纠正，只需照原文回答。"
         "--- 用户问题 ---\n{question}\n\n"
         "--- 知识图谱查询结果 ---\n{kg_result}\n\n"
         "--- 相关文档信息 ---\n{rag_context}\n\n"

@@ -198,6 +198,48 @@ score: 0.5339464480349062
 是因为在milvus_faq这个作业里，本地文档的格式是csv，且是 问题：答案这种表格形式的，
 如果直接拿过来用，就会出现解析不对的问题。
 
+20251224
+```python
+    final_answer_prompt = PromptTemplate(
+        "你是一个专业的金融分析师。请根据以下信息，以清晰、简洁的语言回答用户的问题。\n"
+        "请严格根据以下信息回答问题，不要使用任何外部知识或实时搜索功能。"
+        "即使你觉得信息有误，也不要纠正，只需照原文回答。"
+        "--- 用户问题 ---\n{question}\n\n"
+        "--- 知识图谱查询结果 ---\n{kg_result}\n\n"
+        "--- 相关文档信息 ---\n{rag_context}\n\n"
+        "--- 最终回答 ---\n"
+    )
+```
+最终，通过提示词的严格限制，不让大模型去联网搜索。
+qwen-plus的enable_search:False属性，怎么放都有问题。
+控制台打印如下
+```console
+DEBUG:dashscope:Request body: {'model': 'qwen-plus', 'parameters': {'max_tokens': 256, 'temperature': 0.1, 'seed': 1234, 'result_format': 'message'}, 'input': {'messages': [{'role': 'system', 'content': "You are an expert Q&A system that is trusted around the world.\nAlways answer the query using the provided context information, and not prior knowledge.\nSome rules to follow:\n1. Never directly reference the given context in your answer.\n2. Avoid statements like 'Based on the context, ...' or 'The context information ...' or anything along those lines."}, {'role': 'user', 'content': 'Context information is below.\n---------------------\nfile_path: data\\company.txt\n\n公司名称: 上汽通用五菱\r\n成立日期: 2002-11-18\r\n总部地点: 中国柳州\r\n主营业务: 各类乘用车以及特种汽车生产、制造以及与汽车相关配件的生产、制造\r\n公司简介: 上汽通用五菱企业愿景为“成为全球创新、跨界、体验的标杆公司”。拥有五菱和宝骏两个高价值汽车品牌：五菱品牌不忘初心，持续深耕人民需求，要造人民买得起、用得上、用得好的产品；宝骏品牌以“年轻、科技、向上”为标签，致力于对未来生活的探索，以“科技宜人，时尚为民”为品牌宣言，宝骏品牌历久弥新，转型新时代，目标成为新能源“民心”科技的普及者，开发人民享受得起的科技产品，成为公司新质生产力的增长点。\r\n\r\n公司名称: 上汽集团\r\n成立日期: 1920-01-01\r\n总部地点: 中国上海\r\n主营业务: 整车以及相关配件的生产、移动出行服务\r\n公司简介: 上海汽车集团股份有限公司（简称"上汽集团"，股票代码600104）于2011年实现整体上市。集团全年实现整车批售401.3万辆，零售463.9万辆。其中，自主品牌销量274.1万辆，销量占比近百分 之六十。新能源车销量136.8万辆，同比增长百分三十，海外市场销量108.2万辆，集团"双百万"规模进一步扩大。2025年7月，上汽集团以2024年度合并报表872.239亿美元的营业收入，名列《财富》杂志世界500强第138位，第21次上榜。\r\n\r\n公司名称: 通用汽车公司\r\n成立日期: 1908-09-22\r\n总部地点: 美国\r\n主营业务: 整车以及相 关配件的生产、移动出行服务、汽车行业上下游服务\r\n公司简介: 公司业务涵盖全球汽车生产与销售，旗下品牌包括别克、雪佛兰、凯迪拉克、GMC等，2023年收入达1718亿美元。其前身为1903年戴维·别克创办的别克汽车公司。近年来，通用汽车积极推进电气化转型，包括更换企业LOGO ,和投资电池材料领域。\r\n\r\n公司名称: 上海汽车工 业（集团）有限公司\r\n成立日期: 1997年12月31日\r\n总部地点: 中国上海\r\n主营业务: 经营范围包括汽车，拖拉机，摩托车的生产、研制、销售、开发投资，授权范围内的国有资产经营与管理，国内贸易（除专项规定），咨询服务\r\n公司简介: 上海汽车工业（集团）有限公司成立于1996年03月01日，注册地位于上海市武康路390号，法定代表人为王晓秋。上海汽车工业（集团）有限公司对外投资34家公司，具有6处分支机构。\r\n\r\n公司名称: 中国远洋海运集团有限公司\r\n成立日期: 2016年2月18日\r\n总部地点: 中国\r\n主营业务: 国际船舶运输、国际海运辅助业务；从事货物及技术的进出口业务；海上、陆路、航空国际货运代理业务；自有船舶租赁；船舶、集装箱、钢 材销售；\r\n公司简介: 中国远洋海运集团将打造以航运、综合物流及相关金融服务为支柱，多产业集群、全球领先的综合性物流供应链服务集团。\n---------------------\nGiven the context information and not prior knowledge, answer the query.\nQuery: 通用成立时间？\nAnswer: '}]}}
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): dashscope.aliyuncs.com:443
+DEBUG:urllib3.connectionpool:https://dashscope.aliyuncs.com:443 "POST /api/v1/services/aigc/text-generation/generation HTTP/1.1" 200 None
+DEBUG:dashscope:Response: {'output': {'choices': [{'message': {'content': '1908-09-22', 'role': 'assistant'}, 'finish_reason': 'stop'}]}, 'usage': {'total_tokens': 899, 'output_tokens': 10, 'input_tokens': 889, 'prompt_tokens_details': {'cached_tokens': 0}}, 'request_id': 'd53f26b1-516d-4380-bb65-8d9d7b1a4037'}
+rag_response: 1908-09-22
+score: 0.5339464480349062
+DEBUG:dashscope:Request body: {'model': 'qwen-plus', 'parameters': {'max_tokens': 256, 'temperature': 0.1, 'seed': 1234, 'result_format': 'message'}, 'input': {'messages': [{'role': 'user', 'content': "你是一个专业的金融分析师。请根据以下信息，以清晰、简洁的语言回答用户的问题。\n请严格根据以下信息回答问 题，不要使用任何外部知识或实时搜索功能。即使你觉得信息有误，也不要纠正，只需照原文回答。--- 用户问题 ---\n通用成立时间？\n\n--- 知识图谱查询结果 ---\n未找到与 '通用' 相关的信息。\n\n--- 相关文档信息 ---\n1908-09-22\n\n--- 最终回答 ---\n"}]}}
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): dashscope.aliyuncs.com:443
+DEBUG:urllib3.connectionpool:https://dashscope.aliyuncs.com:443 "POST /api/v1/services/aigc/text-generation/generation HTTP/1.1" 200 None
+DEBUG:dashscope:Response: {'output': {'choices': [{'message': {'content': '通用成立时间是1908年9月22日。', 'role': 'assistant'}, 'finish_reason': 'stop'}]}, 'usage': {'total_tokens': 126, 'output_tokens': 15, 'input_tokens': 111, 'prompt_tokens_details': {'cached_tokens': 0}}, 'request_id': 'ea454a5c-1da4-426d-92d6-b0dafd31eac4'}
+INFO:     127.0.0.1:53253 - "POST /api/query HTTP/1.1" 200 OK
+```
+浏览器的回复：
+```浏览器
+{
+  "final_answer": "通用成立时间是1908年9月22日。",
+  "reasoning_path": [
+    "步骤 1: 从问题 '通用成立时间？' 中识别出核心实体 -> '通用'",
+    "步骤 2: 未识别到特定模式，使用 LLM 将自然语言转换为 Cypher 查询。",
+    "   - 图谱查询结果: 未找到与 '通用' 相关的信息。",
+    "步骤 3: 通过 RAG 检索关于 '通用' 的背景文档信息。",
+    "   - RAG 检索到的上下文: 1908-09-22...",
+    "步骤 4: 综合图谱结果和文档信息，由 LLM 生成最终的自然语言回答。"
+  ]
+}
+```
 ## 4. 总结
 由于引入了Neo4j的图数据库，这个是一个新的数据库，需要花些时间学习其用法。
 通过参考别人的代码并加以调试，在不断的调试过程中，积累并消化GraphRAG的使用、技术构成。
@@ -205,3 +247,4 @@ score: 0.5339464480349062
 1，通过构建明确的提示词，告知大模型，想要做什么。
 2，通过增加合适的节点解析器，将文档拆分，提高rag的检索的准确性
 3，要注意本地文档的解析问题。
+4，通过系统提示词，可以约束大模型的行为。
