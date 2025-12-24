@@ -128,17 +128,9 @@ def multiHopQuery(question: str):
     print("rag_response:", rag_response)
     for node in rag_response.source_nodes:
         # 从节点文本中解析出原始问题和答案
-        print("node_text",node.get_text())
-        textparts = node.get_text().split('\n答案: ')
-        for textpart in textparts:
-            print("textpart", textpart)
-        original_question = textparts[0].replace('问题: ', '')
-        answer = textparts[1] if len(textparts) > 1 else "我还要继续学习，暂时无法回复您"
-        print("question:", original_question)
-        print("answer:", answer)
         print("score:", node.get_score())
 
-    rag_context = "\n\n".join([node.get_content() for node in rag_response.source_nodes])
+    rag_context = rag_response.response
     reasoning_path.append(f"步骤 3: 通过 RAG 检索关于 '{entity_name}' 的背景文档信息。")
     reasoning_path.append(f"   - RAG 检索到的上下文: {rag_context[:200]}...")  # 仅显示部分
 

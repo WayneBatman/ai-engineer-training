@@ -153,6 +153,50 @@ rag检索：通用汽车公司成立于1908年9月22日，总部位于美国。�
   ]
 }
 ```
+20251224
+```python
+rag_response = _rag_query_engine.query(question)
+    print("rag_response:", rag_response)
+    for node in rag_response.source_nodes:
+        # 从节点文本中解析出原始问题和答案
+        print("score:", node.get_score())
+
+    rag_context = rag_response.response
+    reasoning_path.append(f"步骤 3: 通过 RAG 检索关于 '{entity_name}' 的背景文档信息。")
+    reasoning_path.append(f"   - RAG 检索到的上下文: {rag_context[:200]}...")  # 仅显示部分
+```
+通过调整最后输出解析，解决找到答案，但实际回答不对的问题。
+控制台如下
+```console
+当前用户问题: 通用成立时间？
+步骤 1: 从问题 '通用成立时间？' 中识别出核心实体 -> '通用'
+步骤 2: 未识别到特定模式，使用 LLM 将自然语言转换为 Cypher 查询。
+Graph Store Query:
+MATCH (n {name: '通用'}) RETURN n                                                                                                                                                                                                                                                                                
+Graph Store Response:                                                                                                                                                                                                                                                                                            
+[]                                                                                                                                                                                                                                                                                                               
+Final Response: 未找到与 '通用' 相关的信息。                                                                                                                                                                                                                                                                     
+rag_response: 1908-09-22                                                                                                                                                                                                                                                                                         
+score: 0.5339464480349062
+```
+浏览器返回信息
+```浏览器
+{
+  "final_answer": "通用汽车公司（General Motors）成立于1908年9月16日。",
+  "reasoning_path": [
+    "步骤 1: 从问题 '通用成立时间？' 中识别出核心实体 -> '通用'",
+    "步骤 2: 未识别到特定模式，使用 LLM 将自然语言转换为 Cypher 查询。",
+    "   - 图谱查询结果: 未找到与 '通用' 相关的信息。",
+    "步骤 3: 通过 RAG 检索关于 '通用' 的背景文档信息。",
+    "   - RAG 检索到的上下文: 1908-09-22...",
+    "步骤 4: 综合图谱结果和文档信息，由 LLM 生成最终的自然语言回答。"
+  ]
+}
+```
+不过，还是发现了一个bug，大模型自己又去网络搜索（成立于1908年9月16日），然后没有使用本地RAG中的成立时间---1908-09-22
+之前的原因分析：
+是因为在milvus_faq这个作业里，本地文档的格式是csv，且是 问题：答案这种表格形式的，
+如果直接拿过来用，就会出现解析不对的问题。
 
 ## 4. 总结
 由于引入了Neo4j的图数据库，这个是一个新的数据库，需要花些时间学习其用法。
@@ -160,3 +204,4 @@ rag检索：通用汽车公司成立于1908年9月22日，总部位于美国。�
 20241224
 1，通过构建明确的提示词，告知大模型，想要做什么。
 2，通过增加合适的节点解析器，将文档拆分，提高rag的检索的准确性
+3，要注意本地文档的解析问题。
