@@ -1,4 +1,6 @@
+import logging
 import os
+import sys
 from os.path import splitdrive
 
 from llama_index.core import (
@@ -13,6 +15,9 @@ from llama_index.core.query_engine import KnowledgeGraphQueryEngine
 from llama_index.core.prompts import PromptTemplate, PromptType
 
 import config
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
 # --- 全局变量 ---
 _rag_query_engine = None
@@ -137,6 +142,7 @@ def multiHopQuery(question: str):
     # 4. LLM 生成最终回答
     final_answer_prompt = PromptTemplate(
         "你是一个专业的金融分析师。请根据以下信息，以清晰、简洁的语言回答用户的问题。\n"
+        "请不要使用实时搜索，仅根据本地的知识库和知识图谱回答"
         "--- 用户问题 ---\n{question}\n\n"
         "--- 知识图谱查询结果 ---\n{kg_result}\n\n"
         "--- 相关文档信息 ---\n{rag_context}\n\n"
