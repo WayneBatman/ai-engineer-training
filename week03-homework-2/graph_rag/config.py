@@ -37,10 +37,13 @@ if not DASHSCOPE_API_KEY:
 #     model="qwen-plus",
 #     api_base="https://dashscope.aliyuncs.com/compatible-mode/v1",
 #     api_key=DASHSCOPE_API_KEY,
-#     is_chat_model=True
+#     #is_chat_model=True,
+#     extra_body={
+#         "enable_search": False
+#     }
 # )
 
-Settings.llm = DashScope(model_name="qwen-plus", api_key=DASHSCOPE_API_KEY,enable_search=False)
+Settings.llm = DashScope(model_name="qwen-plus", api_key=DASHSCOPE_API_KEY,extra_body={"enable_search": False})
 
 Settings.embed_model = DashScopeEmbedding(
     model_name=DashScopeTextEmbeddingModels.TEXT_EMBEDDING_V3,
