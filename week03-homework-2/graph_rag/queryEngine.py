@@ -45,10 +45,13 @@ def _initKgQueryEngine():
     )
 
     #https://github.com/run-llama/llama_index/issues/16847
+    #需要明确的提示词，大模型才知道干什么。
     DEFAULT_GRAPH_QUERY_PROMPT = PromptTemplate(
         """
         根据问题产生查询图谱
         {query_str}
+        请不要额外添加自然语言的描述。
+        请符合Cypher语法规范
         """,
         prompt_type=PromptType.TEXT_TO_GRAPH_QUERY,
     )
