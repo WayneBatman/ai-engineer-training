@@ -14,9 +14,7 @@ app.include_router(router, prefix="/api")
 @app.get("/")
 def read_root():
     return {
-        "message": "欢迎使用 GraphRAG API. "
-                   "请先运行 'python -m graph_rag.graph_builder' 来构建知识图谱, "
-                   "然后访问 /docs 查看 API 文档."
+        "message": "通过访问 /docs 查看 API 文档."
     }
 
 def main():
