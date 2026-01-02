@@ -51,6 +51,12 @@ class AgentService:
         )
         return agent
 
+    def get_model(self):
+        return self._model
+
+    def get_tools(self) -> list:
+        return self._tools
+
     # def print_services(self):
     #     print("--- 当前服务状态 ---")
     #     print(f"  模型: {self._llm.model_name}")

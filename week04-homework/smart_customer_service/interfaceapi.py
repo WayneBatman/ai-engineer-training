@@ -3,11 +3,14 @@ from starlette import status
 
 import dateutils
 from agentservice import service_manager
+from graphservice import GraphManager
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 router = APIRouter()
+
+graph_manager = GraphManager(service_manager)
 
 class ChatRequest(BaseModel):
     userid: str
@@ -45,8 +48,8 @@ def health_check():
                 message = f"当前服务不健康，原因{e}"
             )
 
-@router.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest):
+@router.post("/chatAgent", response_model=ChatResponse)
+def chatAgent(request: ChatRequest):
     if not request.question:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,detail="请问我有什么可以帮助您？")
 
@@ -54,6 +57,29 @@ def chat(request: ChatRequest):
 
     try:
         reply = service_manager.chat_response(request.question)
+        return ChatResponse(
+            httpstatus=status.HTTP_200_OK,
+            message="请求成功",
+            data={
+                "reply": reply
+            }
+        )
+    except Exception as e:
+        print(f"当前服务异常，异常信息：{e}")
+        raise ServiceError(
+            httpstatus=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message=f"当前服务报错，原因{e}"
+        )
+
+@router.post("/chatGraph", response_model=ChatResponse)
+def chatGraph(request: ChatRequest):
+    if not request.question:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,detail="请问我有什么可以帮助您？")
+
+    print(f"当前用户问题: {request.question}")
+
+    try:
+        reply = graph_manager.chat_response(request.question,request.userid)
         return ChatResponse(
             httpstatus=status.HTTP_200_OK,
             message="请求成功",
