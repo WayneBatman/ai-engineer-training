@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from smart_customer_service.controller.interfaceapi import router as api_router
+from interfaceapi import router as api_router
 
 app = FastAPI(
     title="智能客服系统",
