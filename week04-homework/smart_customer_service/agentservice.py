@@ -39,7 +39,7 @@ class AgentService:
 
     def _init_tools(self) -> list:
         return [
-            get_date_from_question,query_order
+            get_date_from_question,query_order,apply_refund
         ]
 
     def _create_agent(self):

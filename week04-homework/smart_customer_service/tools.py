@@ -62,3 +62,25 @@ def query_order(order_id) -> dict:
             "order_id": order_id,
             "error": "未找到该订单，请检查订单号是否正确。"
         }
+
+@tool
+def apply_refund(order_id: str, reason: str) -> dict:
+    """
+    为指定订单号的订单申请退款。
+    需要提供订单号和退款原因。
+    """
+    print(f"--- [工具调用] 正在为订单号 {order_id} 申请退款，原因: {reason} ---")
+    if "SN" in order_id:
+        refund_id = f"REFUND_{order_id}"
+        return {
+            "success": True,
+            "order_id": order_id,
+            "refund_id": refund_id,
+            "message": "退款申请已提交，审核通过后将原路退回。"
+        }
+    else:
+        return {
+            "success": False,
+            "order_id": order_id,
+            "error": "无效的订单号，无法申请退款。"
+        }

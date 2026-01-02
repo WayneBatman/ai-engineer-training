@@ -20,30 +20,11 @@ class GraphManager:
         tool_node = ToolNode(tools)
 
         # 添加节点
-        agent_builder.add_node("agent", self._call_model)
-        agent_builder.add_node("tool_node", tool_node)
-
-        agent_builder.add_node("ask_for_order_id", self._ask_for_order_id)
-
-        # 添加边来连接节点
-        agent_builder.set_conditional_entry_point(
-            self._router,#_router（路由函数仅用于条件分支，无需作为节点）；
-            path_map={
-                "ask_for_order_id": "ask_for_order_id",
-                "agent": "agent",
-            }
-        )
-        agent_builder.add_edge('ask_for_order_id', END)
-        agent_builder.add_conditional_edges(
-            "agent",
-            self._should_continue,
-            {"tool_node": "tool_node", "end": END}
-        )
-        agent_builder.add_edge("tool_node", "agent")
-
-        #agent已经具备toolCall的能力了，这里直接让angent做一个节点
-        # agent_builder.add_node("agent", self._call_agent)
+        # agent_builder.add_node("agent", self._call_model)
+        # agent_builder.add_node("tool_node", tool_node)
+        #
         # agent_builder.add_node("ask_for_order_id", self._ask_for_order_id)
+        #
         # # 添加边来连接节点
         # agent_builder.set_conditional_entry_point(
         #     self._router,#_router（路由函数仅用于条件分支，无需作为节点）；
@@ -52,15 +33,34 @@ class GraphManager:
         #         "agent": "agent",
         #     }
         # )
-        #
         # agent_builder.add_edge('ask_for_order_id', END)
-        # agent_builder.add_edge("agent", END)
+        # agent_builder.add_conditional_edges(
+        #     "agent",
+        #     self._should_continue,
+        #     {"tool_node": "tool_node", "end": END}
+        # )
+        # agent_builder.add_edge("tool_node", "agent")
+
+        #agent已经具备toolCall的能力了，这里直接让angent做一个节点
+        agent_builder.add_node("agent", self._call_agent)
+        agent_builder.add_node("ask_for_order_id", self._ask_for_order_id)
+        # 添加边来连接节点
+        agent_builder.set_conditional_entry_point(
+            self._router,#_router（路由函数仅用于条件分支，无需作为节点）；
+            path_map={
+                "ask_for_order_id": "ask_for_order_id",
+                "agent": "agent",
+            }
+        )
+
+        agent_builder.add_edge('ask_for_order_id', END)
+        agent_builder.add_edge("agent", END)
 
         # 编译智能体
         agent = agent_builder.compile()
 
-        agent.get_graph().draw_mermaid_png(output_file_path="llm_graph.png")  # 保存到本地，文件名graph.png
-        print("流程图已保存到本地：llm_graph.png")
+        # agent.get_graph().draw_mermaid_png(output_file_path="llm_graph.png")  # 保存到本地，文件名graph.png
+        # print("流程图已保存到本地：llm_graph.png")
 
         return agent
 
