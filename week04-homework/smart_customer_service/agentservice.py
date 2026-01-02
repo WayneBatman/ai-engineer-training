@@ -39,7 +39,7 @@ class AgentService:
 
     def _init_tools(self) -> list:
         return [
-            get_date_from_question
+            get_date_from_question,query_order
         ]
 
     def _create_agent(self):
@@ -86,6 +86,21 @@ class AgentService:
         # 这里使用-1 是因为使用系统提示词，限制LLM的回复
         #final_message = response['messages'][-1]
         # 实际上，如果工具返回的message，则应该以toolMessage为准
+
+        reply = response['messages'][-1].content
+        for message in response["messages"]:
+            if(isinstance(message,ToolMessage)):
+                reply = message.content
+                break
+
+        return reply
+
+    def thinking(self, param):
+        print("需要agent思考的问题是：",param)
+        response = self._agent.invoke({
+            "messages": param
+        })
+        print("angent的回复：", response)
 
         reply = response['messages'][-1].content
         for message in response["messages"]:

@@ -28,3 +28,37 @@ def get_date_from_question(question :str ) -> str:
         return "无法解析该时间，我还需要多学习。"
 
     return target_date
+
+@tool
+def query_order(order_id) -> dict:
+    """
+        工具：根据订单号查询订单信息）。
+
+    参数：
+        order_id: 订单号
+
+    返回：
+        返回订单时间以及状态
+    """
+    print(f"--- [工具调用] 正在查询订单号: {order_id} ---")
+    mock_db = {
+        "SN202500001": {"status": "已发货", "tracking_number": "SF202601030089", "items": ["鱼书-深度学习入门-基于Python....."]},
+        "SN202500002": {"status": "已发货", "tracking_number": "ZT202601040078", "items": ["鱼书-深度学习进阶-自然语言....."]},
+        "SN202500003": {"status": "待支付", "tracking_number": None, "items": ["鱼书-生成模型进阶"]},
+        "SN202500004": {"status": "已完成", "tracking_number": "YT202601040001", "items": ["极客时间台历"]},
+    }
+    order_info = mock_db.get(order_id)
+    if order_info:
+        return {
+            "success": True,
+            "order_id": order_id,
+            "status": order_info["status"],
+            "tracking_number": order_info["tracking_number"],
+            "details": f"订单中的商品: {', '.join(order_info['items'])}"
+        }
+    else:
+        return {
+            "success": False,
+            "order_id": order_id,
+            "error": "未找到该订单，请检查订单号是否正确。"
+        }
