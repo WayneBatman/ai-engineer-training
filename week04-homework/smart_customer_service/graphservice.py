@@ -112,6 +112,10 @@ class GraphManager:
         follow_up_message = AIMessage(content="好的，请问您的订单号是多少？")
         return {"messages": [follow_up_message]}
 
+    def reload_graph(self):
+        """热重载图，应用新的服务（模型或工具）"""
+        self._app = self._build_graph()
+
     def get_app(self):
         """获取编译好的 LangGraph 应用实例"""
         return self._app

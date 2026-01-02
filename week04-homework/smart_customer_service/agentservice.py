@@ -22,7 +22,7 @@ class AgentService:
             raise ValueError("请设置环境变量 DASHSCOPE_API_KEY")
 
         return ChatTongyi(
-            model_name=config.LLM_MODEL_NAME
+            model=config.LLM_MODEL_NAME
         )
 
     def _init_system_msg(self):
@@ -57,16 +57,20 @@ class AgentService:
     def get_tools(self) -> list:
         return self._tools
 
-    # def print_services(self):
-    #     print("--- 当前服务状态 ---")
-    #     print(f"  模型: {self._llm.model_name}")
-    #     print(f"  工具: {[tool.name for tool in self._tools]}")
-    #     print("--------------------")
+    def update_llm(self, model_name: str):
+        print(f"🔄 [热更新] 正在更新LLM模型为: {model_name}")
+        self._model = ChatTongyi(model_name=model_name, temperature=0, streaming=True)
+        self.print_services()
+
+    def print_services(self):
+        print("--- 当前服务状态 ---")
+        print(f"  模型: {self._model.model_name}")
+        print(f"  工具: {[tool.name for tool in self._tools]}")
+        print("--------------------")
 
     def get_services_status(self):
         return {
             "model": self._model.model_name,
-            "status": self._model.status
         }
 
     def chat_response(self,question:str):

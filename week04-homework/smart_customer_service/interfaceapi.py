@@ -12,6 +12,9 @@ router = APIRouter()
 
 graph_manager = GraphManager(service_manager)
 
+class HotUpdateRequest(BaseModel):
+    modelname: str # e.g., "qwen-max" or "default"
+
 class ChatRequest(BaseModel):
     userid: str
     question : str
@@ -93,3 +96,15 @@ def chatGraph(request: ChatRequest):
             httpstatus=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message=f"当前服务报错，原因{e}"
         )
+
+@router.post("/hot-update", summary="热更新模型或工具")
+async def hot_update(request: HotUpdateRequest):
+    try:
+        service_manager.update_llm(request.modelname)
+
+        # 更新后，重新加载图
+        graph_manager.reload_graph()
+
+        return {"status": "success", "message": "热更新完成.","data": service_manager.get_services_status()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"热更新失败: {e}")
