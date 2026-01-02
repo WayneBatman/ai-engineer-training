@@ -22,7 +22,7 @@ class AgentService:
             raise ValueError("请设置环境变量 DASHSCOPE_API_KEY")
 
         return ChatTongyi(
-            model=config.LLM_MODEL_NAME
+            model_name=config.LLM_MODEL_NAME
         )
 
     def _init_system_msg(self):
