@@ -2,7 +2,7 @@ from typing import Optional
 from starlette import status
 
 import dateutils
-from coreservice import service_manager
+from agentservice import service_manager
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel

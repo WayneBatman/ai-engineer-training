@@ -1,6 +1,6 @@
 from langchain.agents import create_agent
 from langchain_community.chat_models import ChatTongyi
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_core.prompts import PromptTemplate
 
 import config
@@ -77,9 +77,17 @@ class AgentService:
         # )
 
         print("当前系统回复：",response)
-        final_message = response['messages'][-1]
+        # 这里使用-1 是因为使用系统提示词，限制LLM的回复
+        #final_message = response['messages'][-1]
+        # 实际上，如果工具返回的message，则应该以toolMessage为准
 
-        return final_message.content
+        reply = response['messages'][-1].content
+        for message in response["messages"]:
+            if(isinstance(message,ToolMessage)):
+                reply = message.content
+                break
+
+        return reply
 
 
 # 创建一个单例
