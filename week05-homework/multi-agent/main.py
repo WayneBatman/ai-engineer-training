@@ -33,7 +33,12 @@ async def run_writing_task(topic: str):
     async with client.session("tools_server") as mcp_session:
         print("MCP 客户端已连接到工具服务器。")
 
-        app_graph = await build_graph(mcp_session)
+        # 检查是否启用测试模式（通过环境变量）
+        test_mode = os.getenv("TEST_MODE", "false").lower() == "true"
+        app_graph, nodes = await build_graph(mcp_session, test_mode=test_mode)
+
+        if test_mode:
+            print("⚠️  测试模式已启用 - 将模拟节点失败以测试重试机制\n")
 
         print("\n" + "=" * 50)
         print("客户端启动，开始执行写作任务...")
@@ -43,7 +48,9 @@ async def run_writing_task(topic: str):
             "topic": topic,
             "style": "通俗易懂",
             "length": 1000,
-            "log": [f"# 多代理协作写作流程记录\n\n**任务主题:** {topic}\n"]
+            "log": [f"# 多代理协作写作流程记录\n\n**任务主题:** {topic}\n"],
+            "retry_count": 0,
+            "error_log": []
         }
 
         final_state = await app_graph.ainvoke(initial_state)
@@ -58,7 +65,13 @@ async def run_writing_task(topic: str):
         final_article = final_state.get("final_article", "未能生成最终文章。")
         process_log = "\n".join(final_state.get("log", []))
 
-        final_output = f"# 最终文章：{topic}\n\n{final_article}\n\n---\n\n{process_log}"
+        # 添加异常处理日志
+        error_log = final_state.get("error_log", [])
+        error_section = ""
+        if error_log:
+            error_section = "\n\n---\n\n# 异常处理日志\n\n" + "\n".join(error_log)
+
+        final_output = f"# 最终文章：{topic}\n\n{final_article}\n\n---\n\n{process_log}{error_section}"
 
         with open(output_filename, "w", encoding="utf-8") as f:
             f.write(final_output)

@@ -23,10 +23,9 @@ def search(topic: str, max_results: int = 5) -> str:
 def get_prompt(agent_name: str) -> str:
     """根据代理名称获取对应的系统提示词。"""
     print(f"MCP服务器: 获取提示词： '{agent_name}'...")
-    print(f"PROMPTS type: {type(PROMPTS)}")
-    print(f"PROMPTS keys: {dir(PROMPTS) if hasattr(PROMPTS, '__dict__') else 'N/A'}")
-    print(f"PROMPTS dict: {PROMPTS.__dict__ if hasattr(PROMPTS, '__dict__') else PROMPTS}")
-    return PROMPTS.PROMPTS.get(agent_name, f"Error: 获取提示词失败. agent_name={agent_name}")
+    # 支持备用代理
+    prompts_dict = PROMPTS.PROMPTS
+    return prompts_dict.get(agent_name, f"Error: 获取提示词失败. agent_name={agent_name}")
 
 
 def run():
